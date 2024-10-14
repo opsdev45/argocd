@@ -1,13 +1,11 @@
-name: argocd 
+name: CI notify
 
 on:
-  workflow_run:
-    workflows: ["dev pipeline"]
-    types:
-      - completed
+  repository_dispatch:
+    types: [trigger_deployment]
 
 jobs:
-  argocd:
+  notify:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,10 +14,10 @@ jobs:
       - name: Change image tag in deployment
         run: |
           # Update the deployment YAML with the new image tag
-          sed -i 's|image: devops45of/app:.*|image: devops45of/app:${{ github.event.workflow_run.head_commit.id }}|g' deploy/deployment.yml
+          sed -i 's|image: devops45of/app:.*|image: devops45of/app:${{ github.event.client_payload.sha }}|g' deploy/deployment.yml
       
       - name: Commit changes
         run: |
           git add deploy/deployment.yml
-          git commit -m "Update image tag to ${{ github.event.workflow_run.head_commit.id }}"
-          git push origin main 
+          git commit -m "Update image tag to ${{ github.event.client_payload.sha }}"
+          git push origin main
