@@ -3,7 +3,8 @@ name: CI notify
 on:
   repository_dispatch:
     types: [trigger_deployment]
-
+permissions:
+  contents: write
 jobs:
   notify:
     runs-on: ubuntu-latest
