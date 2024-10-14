@@ -16,8 +16,12 @@ jobs:
           # Update the deployment YAML with the new image tag
           sed -i 's|image: devops45of/app:.*|image: devops45of/app:${{ github.event.client_payload.sha }}|g' deploy/deployment.yml
       
-      - name: Commit changes
-        run: |
-          git add deploy/deployment.yml
-          git commit -m "Update image tag to ${{ github.event.client_payload.sha }}"
-          git push origin main
+      - name: Run the Action
+        uses: devops-infra/action-commit-push@master
+        with:
+          github_token: "${{ secrets.GITHUB_TOKEN }}"
+          add_timestamp: true
+          commit_prefix: "[AUTO]"
+          commit_message: "Automatic commit"
+          force: false
+          target_branch: update/version
