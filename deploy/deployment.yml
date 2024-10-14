@@ -26,6 +26,8 @@ spec:
       containers:
       - name: weather
         image: devops45of/app:history1
-    
+        env:
+          - name: BG_COLOR
+            value: 'red'
 
 
