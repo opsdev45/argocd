@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: weather
-        image: devops45of/app:5b05c625679e58fcea13f03d45c663e4c2ac9c69
+        image: devops45of/app:2fd7a8051e4432a92da04f62c06d25560bd3345e
         env:
           - name: BG_COLOR
             value: 'green'
