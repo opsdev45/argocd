@@ -40,11 +40,11 @@ jobs:
 
     - name: Create ArgoCD Application
       env:
-        APP_NAME: ${{ github.event.argo_parameter.namespace }}
-        APP_PATH: ${{ github.event.argo_parameter.dir }}
+        APP_NAME: ${{ github.event.client_payload.argo_parameter.namespace }}
+        APP_PATH: ${{ github.event.client_payload.argo_parameter.dir }}
         REPO_URL: https://github.com/opsdev45/argocd.git  
         TARGET_REVISION: HEAD  
-        DEST_NAMESPACE: ${{ github.event.argo_parameter.namespace }} 
+        DEST_NAMESPACE: ${{ github.event.client_payload.argo_parameter.namespace }} 
         PROJECT: default  
       run: |
         echo $APP_NAME -- $APP_PATH -- $TARGET_REVISION 
