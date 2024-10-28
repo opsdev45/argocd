@@ -1,4 +1,4 @@
-name: CI notify
+name: argocd
 
 on:
   repository_dispatch:
