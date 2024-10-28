@@ -19,6 +19,7 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET }}
         aws-region: eu-west-2
+   
     
     - name: Update kube config
       run: aws eks update-kubeconfig --name prod-k8s 
@@ -46,6 +47,7 @@ jobs:
         DEST_NAMESPACE: ${{ github.event.argo_parameter.namespace }} 
         PROJECT: default  
       run: |
+        echo $APP_NAME -- $APP_PATH -- $TARGET_REVISION 
         argocd app create $APP_NAME \
           --repo $REPO_URL \
           --path $APP_PATH \
