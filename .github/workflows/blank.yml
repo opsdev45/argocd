@@ -56,7 +56,7 @@ jobs:
           --revision $TARGET_REVISION \
           --project $PROJECT \
           --sync-policy automated \
-          --auto-prune
+          --auto-prune \
           --sync-option CreateNamespace=true
     
     
