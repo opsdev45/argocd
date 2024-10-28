@@ -2,7 +2,7 @@ name: CI notify
 
 on:
   repository_dispatch:
-    types: [trigger_lambda]
+    types: [trigger_web]
 permissions:
   contents: write
 jobs:
