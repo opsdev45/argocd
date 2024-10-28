@@ -12,7 +12,17 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET }}
+        aws-region: eu-west-2
+    
+    - name: Update kube config
+      run: aws eks update-kubeconfig --name prod-k8s 
+      
     - name: Set up ArgoCD CLI
       run: |
         curl -sSL https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 -o argocd
@@ -21,8 +31,8 @@ jobs:
 
     - name: Login to ArgoCD
       env:
-        ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}        
-        ARGOCD_USERNAME: ${{ secrets.ARGOCD_USERNAME }}    
+        ARGOCD_SERVER: ${{ secrets.ARGOCD_api }}        
+        ARGOCD_USERNAME: admin    
         ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}    
       run: |
         argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD --insecure
@@ -46,15 +56,4 @@ jobs:
           --sync-policy automated \
           --auto-prune
     
-    
-    # - name: Push Docker image to DockerHub
-    #   run: docker push devops45of/app --all-tags
-    # - name: Trigger deployment pipeline in another repository
-    #   run: |
-    #       curl -X POST \
-    #         -H "Accept: application/vnd.github.v3+json" \
-    #         -H "Authorization: token ${{ secrets.GIT_TOKEN }}" \
-    #         https://api.github.com/repos/opsdev45/argocd/dispatches \
-    #         -d '{"event_type": "trigger_lambda", "argo_parameter": {"dir": "${{  }}","namespace": {{}}, "image":{{}} }'
-
     
