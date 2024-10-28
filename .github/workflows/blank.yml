@@ -1,0 +1,60 @@
+name: CI notify
+
+on:
+  repository_dispatch:
+    types: [trigger_lambda]
+permissions:
+  contents: write
+jobs:
+  create-argocd-app:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up ArgoCD CLI
+      run: |
+        curl -sSL https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 -o argocd
+        chmod +x argocd
+        sudo mv argocd /usr/local/bin/
+
+    - name: Login to ArgoCD
+      env:
+        ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}        
+        ARGOCD_USERNAME: ${{ secrets.ARGOCD_USERNAME }}    
+        ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}    
+      run: |
+        argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD --insecure
+
+    - name: Create ArgoCD Application
+      env:
+        APP_NAME: ${{ github.event.argo_parameter.namespace }}
+        APP_PATH: ${{ github.event.argo_parameter.dir }}
+        REPO_URL: https://github.com/opsdev45/argocd.git  
+        TARGET_REVISION: HEAD  
+        DEST_NAMESPACE: ${{ github.event.argo_parameter.namespace }} 
+        PROJECT: default  
+      run: |
+        argocd app create $APP_NAME \
+          --repo $REPO_URL \
+          --path $APP_PATH \
+          --dest-namespace $DEST_NAMESPACE \
+          --dest-server https://kubernetes.default.svc \
+          --revision $TARGET_REVISION \
+          --project $PROJECT \
+          --sync-policy automated \
+          --auto-prune
+    
+    
+    # - name: Push Docker image to DockerHub
+    #   run: docker push devops45of/app --all-tags
+    # - name: Trigger deployment pipeline in another repository
+    #   run: |
+    #       curl -X POST \
+    #         -H "Accept: application/vnd.github.v3+json" \
+    #         -H "Authorization: token ${{ secrets.GIT_TOKEN }}" \
+    #         https://api.github.com/repos/opsdev45/argocd/dispatches \
+    #         -d '{"event_type": "trigger_lambda", "argo_parameter": {"dir": "${{  }}","namespace": {{}}, "image":{{}} }'
+
+    
