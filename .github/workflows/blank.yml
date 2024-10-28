@@ -57,5 +57,6 @@ jobs:
           --project $PROJECT \
           --sync-policy automated \
           --auto-prune
+           --sync-option CreateNamespace=true
     
     
