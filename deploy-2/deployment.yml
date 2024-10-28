@@ -9,6 +9,7 @@ spec:
   selector:
     app: weather
 ---
+#
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -29,6 +29,6 @@ spec:
         image: devops45of/app:1.37
         env:
           - name: BG_COLOR
-            value: 'green'
+            value: 'yellow'
 
 
