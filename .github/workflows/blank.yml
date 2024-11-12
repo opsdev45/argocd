@@ -75,7 +75,7 @@ jobs:
     - name: Change image tag in deployment
       run: |
           # Update the deployment YAML with the new image tag
-          sed -i 's|image: devops45of/app:.*|image: devops45of/app:${{ github.event.client_payload.sha }}|g' deploy/deployment.yml
+          sed -i "s|image: .*|image: ${{ github.event.client_payload.argo_parameter.image }}|g" deploy/deployment.yml
       
     - uses: stefanzweifel/git-auto-commit-action@v5
       with:
