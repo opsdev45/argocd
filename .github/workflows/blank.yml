@@ -39,6 +39,17 @@ jobs:
       run: |
         argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD --insecure
 
+    - name: Change image tag in deployment
+      run: |
+          # Update the deployment YAML with the new image tag
+          sed -i "s|image: .*|image: ${{ github.event.client_payload.argo_parameter.image }}|g" deploy/deployment.yml
+      
+    - uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+            commit_message: "Update image tag to ${{ github.event.client_payload.argo_parameter.image }}"
+            branch: main
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            
     - name: Check if ArgoCD Application Exists
       id: check_app
       env:
@@ -49,7 +60,7 @@ jobs:
         else
           echo "exists=false" >> $GITHUB_ENV
         fi
-
+        
     - name: Create ArgoCD Application
       if: env.exists == 'false'
       env:
@@ -72,14 +83,5 @@ jobs:
           --sync-option CreateNamespace=true
 
       
-    - name: Change image tag in deployment
-      run: |
-          # Update the deployment YAML with the new image tag
-          sed -i "s|image: .*|image: ${{ github.event.client_payload.argo_parameter.image }}|g" deploy/deployment.yml
-      
-    - uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-            commit_message: "Update image tag to devops45of/app:${{ github.event.client_payload.sha }}"
-            branch: main
-            github_token: ${{ secrets.GITHUB_TOKEN }}
+
     
