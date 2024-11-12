@@ -2,7 +2,8 @@ name: argocd
 
 on:
   repository_dispatch:
-    types: [trigger_web]
+    types: [trigger_argocd]
+
 permissions:
   contents: write
 jobs:
@@ -12,17 +13,17 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    
+    # Install and Config AWS-CLI , ArgoCD
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET }}
         aws-region: eu-west-2
-   
+
     
     - name: Update kube config
-      run: aws eks update-kubeconfig --name prod-k8s 
+      run: aws eks update-kubeconfig --name demo
       
     - name: Set up ArgoCD CLI
       run: |
@@ -32,22 +33,33 @@ jobs:
 
     - name: Login to ArgoCD
       env:
-        ARGOCD_SERVER: ${{ secrets.ARGOCD_api }}        
-        ARGOCD_USERNAME: admin    
-        ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}    
+        ARGOCD_SERVER: ${{ secrets.ARGOCD_api }}
+        ARGOCD_USERNAME: admin
+        ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
       run: |
         argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD --insecure
 
+    - name: Check if ArgoCD Application Exists
+      id: check_app
+      env:
+        APP_NAME: ${{ github.event.client_payload.argo_parameter.namespace }}
+      run: |
+        if argocd app get $APP_NAME; then
+          echo "exists=true" >> $GITHUB_ENV
+        else
+          echo "exists=false" >> $GITHUB_ENV
+        fi
+
     - name: Create ArgoCD Application
+      if: env.exists == 'false'
       env:
         APP_NAME: ${{ github.event.client_payload.argo_parameter.namespace }}
         APP_PATH: ${{ github.event.client_payload.argo_parameter.dir }}
-        REPO_URL: https://github.com/opsdev45/argocd.git  
-        TARGET_REVISION: HEAD  
-        DEST_NAMESPACE: ${{ github.event.client_payload.argo_parameter.namespace }} 
-        PROJECT: default  
+        REPO_URL: https://github.com/opsdev45/argocd.git
+        TARGET_REVISION: HEAD
+        DEST_NAMESPACE: ${{ github.event.client_payload.argo_parameter.namespace }}
+        PROJECT: default
       run: |
-        echo $APP_NAME -- $APP_PATH -- $TARGET_REVISION 
         argocd app create $APP_NAME \
           --repo $REPO_URL \
           --path $APP_PATH \
@@ -58,5 +70,16 @@ jobs:
           --sync-policy automated \
           --auto-prune \
           --sync-option CreateNamespace=true
-    
+
+      
+    - name: Change image tag in deployment
+      run: |
+          # Update the deployment YAML with the new image tag
+          sed -i 's|image: devops45of/app:.*|image: devops45of/app:${{ github.event.client_payload.sha }}|g' deploy/deployment.yml
+      
+    - uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+            commit_message: "Update image tag to devops45of/app:${{ github.event.client_payload.sha }}"
+            branch: main
+            github_token: ${{ secrets.GITHUB_TOKEN }}
     
