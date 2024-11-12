@@ -71,6 +71,7 @@ jobs:
         DEST_NAMESPACE: ${{ github.event.client_payload.argo_parameter.namespace }}
         PROJECT: default
       run: |
+        echo $APP_NAME -- ${{ github.event.client_payload.argo_parameter.image }}
         argocd app create $APP_NAME \
           --repo $REPO_URL \
           --path $APP_PATH \
