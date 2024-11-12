@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: weather
-        image: :
+        image: devops45of/jenkins:20
         env:
           - name: BG_COLOR
             value: 'green'
